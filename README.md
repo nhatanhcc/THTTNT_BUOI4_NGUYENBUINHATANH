@@ -119,4 +119,96 @@ def draw_colored_graph(G_matrix, coloring_result, node_names):
 4. Hiển thị	nx.draw(G, ..., node_color=node_colors)	Vẽ đồ thị, sử dụng danh sách node_colors để tô màu cho từng đỉnh theo kết quả của thuật toán.
 <br>
 **Bài 2: Phát triển code bài tập mẫu thành các chương trình con sao cho phù hợp.**
+<br>
+**Hàm read_adj_matrix(file_path)**
+<br>
+def read_adj_matrix(file_path):
+    """Đọc ma trận kề từ tệp tin văn bản."""
+    try:
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+        # ... (xử lý dòng) ...
+        N = len(matrix)
+        if not matrix or N != len(matrix[0]):
+            raise ValueError("Ma trận không hợp lệ hoặc không phải ma trận vuông.")
+        return matrix
+    # ... (xử lý lỗi) ...
+    ------------------------------------------
+    Mục đích: Đọc và phân tích cú pháp Ma trận Kề (Adjacency Matrix) từ một tệp văn bản.
 
+Xử lý Dữ liệu: Hàm lặp qua từng dòng, loại bỏ khoảng trắng thừa (strip()), tách các phần tử (split()), và chuyển chúng thành số nguyên (int).
+
+Xác thực: Kiểm tra để đảm bảo dữ liệu đầu vào là một ma trận vuông (số hàng bằng số cột), điều kiện cần cho ma trận kề của đồ thị.
+
+Xử lý Lỗi: Sử dụng try-except để bắt các lỗi phổ biến như FileNotFoundError (không tìm thấy tệp) hoặc ValueError (dữ liệu không hợp lệ).
+<br>
+**Hàm greedy_graph_coloring(G_matrix)**
+<br>
+def greedy_graph_coloring(G_matrix):
+    """Thực hiện thuật toán tô màu tham lam (sắp xếp theo bậc giảm dần)."""
+    N = len(G_matrix)
+    node = [chr(65 + i) for i in range(N)]
+    # ... (Tính bậc và Sắp xếp) ...
+    degree = [sum(G_matrix[i]) for i in range(N)]
+    # ... (Khởi tạo colors và colorDict) ...
+    sortedNode = [node[i] for i in sorted_indices] # Đỉnh đã sắp xếp
+
+    theSolution = {}
+    for n in sortedNode:
+        
+        # 1. Chọn màu hợp lệ nhỏ nhất
+        setTheColor = colorDict[n][0] 
+        theSolution[n] = setTheColor
+
+        adjacentNode_index = G_matrix[t_[n]]
+
+        # 2. Cập nhật danh sách màu khả dụng cho các đỉnh kề
+        for j in range(N):
+            if adjacentNode_index[j] == 1 and (setTheColor in colorDict[node[j]]):
+                colorDict[node[j]].remove(setTheColor)
+
+    return theSolution, node
+--------------------------------------------------
+Tính Bậc và Sắp xếp: Tính bậc của mỗi đỉnh (sum(G_matrix[i])) và tạo danh sách sortedNode bằng cách sắp xếp các đỉnh theo bậc giảm dần.Khởi tạo Màu: Mỗi đỉnh được gán một danh sách available_colors đầy đủ ban đầu (colorDict).Quy tắc Tô màu (Vòng lặp Tham lam):Lặp qua các đỉnh theo thứ tự đã sắp xếp.Chọn Màu: Chọn màu đầu tiên (colorDict[n][0]) còn khả dụng cho đỉnh hiện tại $n$. Đây là nguyên tắc tham lam: luôn chọn màu "tốt nhất" (đầu tiên) hiện tại.Cập nhật Đỉnh kề: Sau khi đỉnh $n$ được tô màu, hàm lặp qua tất cả các đỉnh $j$ kề với $n$. Màu vừa dùng (setTheColor) sẽ bị loại bỏ khỏi danh sách màu khả dụng của đỉnh $j$, đảm bảo quy tắc tô màu đồ thị (các đỉnh kề nhau phải khác màu) được duy trì.
+<br>
+**Hàm draw_colored_graph(G_matrix, coloring_result, node_names)**
+<br>
+def draw_colored_graph(G_matrix, coloring_result, node_names):
+    """Vẽ đồ thị và tô màu các đỉnh dựa trên kết quả."""
+
+    G = nx.Graph()
+    # 1. Thêm đỉnh và cạnh vào đồ thị NetworkX
+    # ...
+    
+    # 2. Ánh xạ tên màu sang mã HEX
+    color_map_hex = {
+        'Red': '#FF0000', 'Blue': '#0000FF', 'Yellow': '#FFFF00', 'Green': '#008000',
+        # ... (các màu khác) ...
+    }
+
+    node_colors = [color_map_hex.get(coloring_result.get(node), '#808080') for node in G.nodes()]
+    
+    # 3. Tính toán bố cục và vẽ
+    pos = nx.spring_layout(G, seed=42)
+
+    plt.figure(figsize=(10, 7))
+    nx.draw(G, pos,
+            with_labels=True,
+            node_color=node_colors, # Dùng danh sách màu đã chuẩn bị
+            # ... (tham số hình vẽ) ...
+            )
+
+    plt.title("Đồ Thị Đã Tô Màu (Thuật Toán Tham Lam)", size=16)
+    plt.show()
+    <br>
+    --------------------------------------------------------------------------
+    Xây dựng Đồ thị: Tạo đối tượng nx.Graph() và thêm các đỉnh (add_nodes_from) và cạnh (add_edge) dựa trên ma trận kề G_matrix.
+
+Chuẩn bị Màu: Chuyển đổi tên màu từ kết quả tô màu (coloring_result) sang mã HEX (vì Matplotlib sử dụng mã HEX để vẽ màu sắc chính xác).
+
+Vẽ:
+
+Sử dụng nx.spring_layout để tính toán vị trí hiển thị của các đỉnh sao cho đồ thị dễ nhìn.
+
+Hàm nx.draw sử dụng danh sách node_colors để tô màu cho từng đỉnh, trực quan hóa kết quả tô màu của thuật toán.
+<br>
