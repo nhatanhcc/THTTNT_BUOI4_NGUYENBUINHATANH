@@ -212,3 +212,48 @@ Sử dụng nx.spring_layout để tính toán vị trí hiển thị của các
 
 Hàm nx.draw sử dụng danh sách node_colors để tô màu cho từng đỉnh, trực quan hóa kết quả tô màu của thuật toán.
 <br>
+**Bài 3: Cài đặt thuật toán người bán hàng và ứng dụng tìm chu trình qua n thành phố mỗi thành phố qua 1 lần với chi phí tối thiểu.**
+<br>
+**Hàm held_karp_tsp(cost_matrix)**
+
+<br>
+def held_karp_tsp(cost_matrix):
+    N = len(cost_matrix)
+    DP = [[INF] * N for _ in range(1 << N)] # Khởi tạo bảng DP
+    DP[1][0] = 0 # Trạng thái cơ sở: Đã thăm đỉnh 0, dừng tại 0, chi phí = 0
+    
+    # ... (Vòng lặp chính) ...
+
+    # Tính chi phí cuối cùng để quay về đỉnh 0
+    final_mask = (1 << N) - 1
+    min_cost = INF
+    
+    for j in range(1, N):
+        min_cost = min(min_cost, DP[final_mask][j] + cost_matrix[j][0])
+
+    return min_cost
+    <br>
+    ---------------------------------------------------------
+Số lượng thành phố (đỉnh).$DP$ Array: Mảng Quy hoạch động có kích thước $(2^N) \times N$.$1 \ll N$ ($2^N$): Tổng số trạng thái $mask$ có thể có (tập hợp con của các đỉnh).$N$: Số lượng đỉnh cuối cùng có thể.Trạng thái cơ sở:DP[1][0] = 0. Mask 1 (binary 00...01) chỉ ra rằng chỉ có đỉnh 0 được thăm. Đỉnh cuối cùng là 0. Chi phí là 0.
+<br>
+**Vòng Lặp Chính (Quy hoạch động)**
+<br>
+for mask in range(1, 1 << N):
+        for j in range(N):
+            if not (mask & (1 << j)): # Đảm bảo đỉnh j có trong tập hợp mask
+                continue
+            
+            prev_mask = mask ^ (1 << j) # Tập hợp các đỉnh đã thăm TRƯỚC khi đến j
+            
+            if prev_mask == 0:
+                continue
+
+            for i in range(N):
+                if prev_mask & (1 << i): # Đảm bảo đỉnh i có trong prev_mask (i là đỉnh trước j)
+                    
+                    if DP[prev_mask][i] != INF and cost_matrix[i][j] != INF:
+                        new_cost = DP[prev_mask][i] + cost_matrix[i][j]
+                        DP[mask][j] = min(DP[mask][j], new_cost)
+        <br>
+        ----------------------------------------------------------
+        Lặp qua $mask$: Lặp qua tất cả các tập hợp đỉnh đã thăm, từ tập nhỏ đến tập lớn.Lặp qua $j$: Đỉnh hiện tại mà đường đi kết thúc ($j$ phải thuộc $mask$).Xác định $i$: Đỉnh ngay trước $j$ trong đường đi (ký hiệu là $i$).prev_mask = mask ^ (1 << j): Tạo mặt nạ mới bằng cách loại bỏ đỉnh $j$ khỏi $mask$.Vòng lặp trong cùng lặp qua tất cả các đỉnh $i$ thuộc prev_mask.Công thức Chuyển đổi Trạng thái (DP Transition):$$DP[mask][j] = \min_{i \in prev\_mask} \left( DP[prev\_mask][i] + \text{cost}[i][j] \right)$$Điều này có nghĩa là, chi phí tối thiểu để đi qua tập đỉnh $mask$ và kết thúc tại $j$ bằng chi phí tối thiểu để đi qua tập đỉnh $prev\_mask$ và kết thúc tại $i$, cộng thêm chi phí đi từ $i$ đến $j$.
